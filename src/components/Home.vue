@@ -8,27 +8,38 @@
             <div class="scanlines"></div>
 
             <div v-if="!playpassEnabled" style="position: relative; z-index: 2; width: 700px">
-              <p>To play PolyVenture you need to obtain a PlayPass. During Alpha phase the PlayPass is free</p>
+              <p>To play PolyVenture you need to obtain an Access Card. During Alpha phase the Access Card is free</p>
 
-              <div v-if="wrongNetworkMessage.length > 0">
-                <a class="btn btn-purchase" style="float: left; margin-right: 20px; width: 300px" @click="requestPolygon()">1) Switch to Polygon Network</a>
-                <a class="btn btn-purchase disabled" style="float: left; width: 300px;">2) Mint a free PlayPass</a>
+              <div v-if="wrongNetworkMessage.length > 0 || !account">
+                <a class="btn btn-purchase" v-if="wrongNetworkMessage.length > 0 && account" style="float: left; margin-right: 20px; width: 300px" @click="requestPolygon()">Switch to Polygon Network</a>
+                <a class="btn btn-purchase" v-if="!account" style="float: left; margin-right: 20px; width: 300px" @click="requestAccount()">Connect Account {{account}}</a>
+                <a class="btn btn-purchase disabled" style="float: left; width: 300px;">Mint a free Access Card</a>
               </div>
-              <div  v-if="wrongNetworkMessage.length === 0">
-                <a class="btn btn-purchase">Mint a free PlayPass</a>
+              <div  v-if="wrongNetworkMessage.length === 0 && account">
+                <a class="btn btn-purchase" v-if="!hasPass" @click="openMint()">Mint a free Access Card</a>
+                <p style="margin-top: 15px; font-weight: 600" v-if="hasPass">Access Card was found on your account. Choose your Access Card</p>
+                <div style="text-align: left;" v-if="hasPass">
+                <select v-model="passChoice"  style="margin-left: 0; text-align: left" class="select-spec">
+                  <option  v-for="(pass) in passList"  :key="pass" :value="pass">Access Card #{{pass}}</option>
+                </select>
+                </div>
+                <div style="width: 100%;">
+                <a class="btn btn-purchase" v-if="hasPass" style="width: 300px;" @click="start(passChoice)">Start</a>
+                </div>
               </div>
+
+
             </div>
 
-          <div class="con" v-if="playpassEnabled">
-              <p>> INPUT "START" TO START THE GAME.</p>
-              <p>> PRESS ENTER KEY TO RUN THE COMMAND</p>
-
-              <div v-for="item in previousCommands" :key="item" style="width: 500px;">
+          <div class="con" v-if="playpassEnabled" id="con" style="height: 400px; overflow: scroll; scrollbar-width: none;  padding-bottom: 50px;">
+              <div v-for="item in previousCommands" :key="item" style="width: 700px; margin-left:5px;" id="conwrap" class="conwrap">
                 <p v-if="item.char === 'user'" style="text-transform:uppercase;">> {{item.message}}</p>
-                <p v-if="item.char === 'sug'" style="color: white; text-transform:uppercase;">> {{item.message}}</p>
-                <p v-if="item.char === 'computer'" class="anim-typewriter" style="height: 20px!important; max-height: 20px!important; overflow: hidden; color: rgb(235 0 255);font-weight: 800; opacity: 0; text-transform:uppercase;">{{item.message}}</p>
+                <p v-if="item.char === 'sug'" class="anim-typewriter" style="color: white; height: 20px!important;  overflow: hidden; text-transform:uppercase;">{{item.message}}</p>
+                <p v-if="item.char === 'computer'" class="anim-typewriter" style="height: 20px!important;  overflow: hidden; color: rgb(235 0 255);font-weight: 800; opacity: 0; text-transform:uppercase;">{{item.message}}</p>
+                <p v-if="item.char === 'forest'" class="anim-typewriter" style="height: 20px!important;  overflow: hidden; color: #07c2a8;font-weight: 800; opacity: 0; text-transform:uppercase;">{{item.message}}</p>
+                <p v-if="item.char === 'puzzle'" class="anim-typewriter" style="height: 20px!important;  overflow: hidden; color: #ffc400;font-weight: 800; opacity: 0; text-transform:uppercase;">{{item.message}}</p>
               </div>
-              <div>
+              <div class="clearfix" style="margin-top: 10px; padding: 5px; position: fixed; bottom: 200px;">
               <p class="cursor">></p>
               <input autofocus type="text" v-model="inputString" class="inp-cursor"  refs="cursi">
               </div>
@@ -59,6 +70,28 @@
     </div>
 
 
+<div v-if="mintOpen || detailOpen" class="opacitylayer" @click="closeAll()"></div>
+
+  <div class="item-detail mint" v-if="mintOpen">
+
+  <div class="scanlines"></div>
+  
+      <div class="item-close" @click="closeMint()">x</div>
+
+      <div v-if="!NFTLoading">
+        <div class="card animate__animated animate__pulse glitch"></div>
+        <div  style="position: absolute; font-weight: 200;  left: 50px; width: 400px; bottom: 45px;">
+        <p style="font-family: 'Fira Mono';color: #00de00;">Access Cards are used to track your progress during your adventure. The pass will be minted and stored in your Polygon wallet.</p>
+        <a class="btn btn-purchase" @click="mintNFT()">Mint a free Access Card</a>
+        </div>
+      </div>
+      <div v-if="NFTLoading" style="padding: 40px; position: absolute; z-index: 5;">
+        <p style="font-family: 'Fira Mono';color: #00de00;">NFT Minting in Progress.</p>
+        <a target="_blank" :href="`https://polygonscan.com/tx/${txHash}`" v-if="txHash.length > 0" class="btn btn-purchase">View TX</a>
+      </div>
+
+  </div>
+
   <div class="item-detail" v-if="detailOpen">
       <div class="item-close" @click="closeDetail()">x</div>
       <div :class="loadedImage" style="width: 100%; height: 100%;"></div>
@@ -71,6 +104,7 @@
 </template>
 
 <script>
+import { AccessCardNFT } from '../abis/AccessCardNFT.js'
 import { mapGetters } from "vuex";
 export default {
   name: 'HomeComponent',
@@ -79,29 +113,88 @@ export default {
   }, 
   data: function() {
     return {
+      mintOpen: false,
       previousCommands: [],
+      passChoice: 0,
       cur: "",
-      playpassEnabled: true,
+      playpassEnabled: false,
       inputString: "",
       currentStep: 1,
       backpackEnabled: false,
       detailOpen: false,
-      loadedImage: ""
+      loadedImage: "",
+      NFTLoading: false,
+      txHash: ""
+    }
+  },
+  watch: {
+    currentPass() {
+      if(this.previousCommands.length != 0) return 
+      this.delaySend('computer', `PASS HOLDER #(${this.currentPass}) IDENTIFIED `, 0)
+      this.delaySend('computer', 'USE COMMAND "START" TO START SIMULATION', 2500)
+    },
+    passList() {
+      this.passChoice = this.passList[0];
     }
   },
   computed: {
     ...mapGetters({
       getProviderLoggedIn: "getProviderLoggedIn",
       web3store: "getWeb3",
+      hasPass: "getPass",
+      currentPass: "getCurrentPass",
+      passList: "getPassList",
       account: "getAccount",
       wrongNetworkMessage: "getWrongNetworkMessage"
     })
   },
   methods: {
+    start(idx) {
+      this.playpassEnabled = true
+      this.$store.commit("setCurrentPass", idx)
+      console.log(idx)
+    },
+    async mintNFT() {
+      this.NFTLoading = true;
+      let nftContract = await new this.web3store.eth.Contract(AccessCardNFT, "0xB986eD3582641F91dD55947FA977244817584F49");
+      await nftContract.methods.mintTo(this.account).send({from: this.account, gas: '300000', gasPrice: '80000000000'}).on('transactionHash', (hash) => {
+        this.txHash = hash
+      }).on('confirmation', async() => {
+        await this.$store.dispatch("getPass", this.account)
+        this.closeMint()
+        this.NFTLoading = false;
+      })
+      console.log('not')
+      await this.$store.dispatch("getPass", this.account)
+      this.NFTLoading = false;
+    },
+    openMint: function() {
+      this.mintOpen = true;
+    },
+    closeMint: function() {
+      this.mintOpen = false;
+    },
     goSetup: function() {
       this.$router.push("/setup")
     },
 
+    async requestAccount() {
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      this.getAccounts()
+
+    },
+    async getAccounts() {
+      let accounts = await this.web3store.eth.getAccounts();
+      this.$store.commit("setAccount", accounts[0]);
+      this.$store.dispatch("getBalance", this.account);
+      
+      this.getBalance = () => {
+        this.$store.dispatch("getBalance", this.account);
+        setTimeout(() => {
+          this.getBalance();
+        }, 10000);
+      };
+    },
     async requestPolygon() {
         let chainId = 137
         if (window.ethereum.networkVersion !== chainId) {
@@ -135,6 +228,11 @@ export default {
 
     },
 
+    closeAll: function() {
+      this.detailOpen = false;
+      this.mintOpen = false;
+    },
+
     openDetail: function(itemTitle) {
       this.detailOpen = true;
       this.loadedImage = itemTitle
@@ -146,29 +244,76 @@ export default {
 
     delaySend: function(author, message, delay) {
       setTimeout(() => {
+        this.updateScroll()
         this.previousCommands.push({char: author, message})
+        this.updateScroll()
         }, delay)
+
+      setTimeout(() => {
+        this.updateScroll()
+      }, delay + 1500)
+
+
     },
     // no checkpoint -> check for start
     // checkpoint 1 -> check for yes, open, ok (positive words)
     // checkpoint 2 -> 
+
     checkpoint1: function(input) {
       if(input === 'start') {
-        this.previousCommands.push({char: 'computer', message: "you wake up on a beach.."})
-        this.delaySend("computer", "there is a backpack on the sand", 4000)
-        this.delaySend("computer", "open backpack?", 8000)
+        this.previousCommands.push({char: 'sug', message: "// simulation booted //"})
+         this.delaySend("computer", "you wake up on a beach", 2500)
+        this.delaySend("computer", "there is a backpack on the sand", 5000)
+        this.delaySend("computer", "open backpack?", 7500)
         this.currentStep++;
       }
+    },
+    updateScroll(){
+      var container = this.$el.querySelector("#con");
+      console.log("container", container)
+      console.log(container)
+      if(container) container.scrollTop = 500000;
     },
     checkpoint2: function(input) {
       if(input === 'open' || input === 'yes' || input === 'ok') {
         this.previousCommands.push({char: 'computer', message: "you open the backpack"})
-        setTimeout(() => {this.backpackEnabled = true }, 4000)
-        this.delaySend("computer", "the backpack contains a key", 4000)
-        this.delaySend("user", "maybe I should give the key a closer look", 10000)
-        this.delaySend("sug", "there are 2 paths leading away from the beach. The first road leads north towards a small town, the second road leads east towards a forest", 14000)
+        setTimeout(() => {this.backpackEnabled = true }, 2500)
+
+        if(!this.backpackEnabled) {
+          this.delaySend("computer", "the backpack contains a key", 3000)
+          this.delaySend("sug", "I should give the key a closer look", 7000)
+        }
+        this.delaySend("computer", "there are 2 paths from here.", 10000)
+        this.delaySend("computer", "The road north leads towards a town", 13000)
+        this.delaySend("computer", "The road south leads towards a forest", 16000)
+
         this.currentStep++;
       }
+      },
+
+      checkpoint3: function(input) {
+        if(input === 'south' || input === 'forest') {
+          this.delaySend("computer", "You enter the forest", 0)
+          this.delaySend("computer", "a voice calls", 2500)
+          this.delaySend("forest", `'you must be participant ${this.currentPass}'`, 5000)
+          this.delaySend("forest", "help me solve this riddle and I will", 8000)
+          this.delaySend("forest", "grant you access to the forest", 12000)
+
+          this.delaySend("puzzle", "4 9 3 6 ", 14000)
+          this.delaySend("puzzle", "4 2 0 8", 16000)
+          this.delaySend("puzzle", "8 1 0 8", 18000)
+          this.delaySend("puzzle", "9 9 8 ?", 20000)
+
+
+
+          this.delaySend("sug", "you can also return to the", 22000)
+          this.delaySend("sug", "beach with the `back' command",24000)
+      
+        }
+
+        if(input === 'north' || input === 'town') {
+          this.delaySend("computer", "The forest", 2500)
+      } 
     },
     handleEnterKey: function() {
       this.previousCommands.push({char: 'user', message: this.inputString})
@@ -177,8 +322,8 @@ export default {
     }
   },
     mounted() {
-
-  },
+     
+    }
 }
 </script>
 
@@ -189,12 +334,47 @@ export default {
   display: none;
 }
 
+// hides scrollbars while allowing to scroll
+div::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+.select-spec {
+  background-color: black!important;
+  border: none;
+  color:white;
+  width: 300px;
+  outline: none;
+  margin-bottom: 30px;
+}
+
+.opacitylayer {
+  position: absolute;
+  top: 0;
+  left: 0; 
+  width: 100%;
+  height: 100vh;
+  background-color: #3858966b;
+  z-index: 2;
+}
+
+.card  {
+  background-image: url("../assets/card.png");
+  background-size: cover; 
+  width: 512px;
+  margin-top: -20px;
+  left: calc(50% - 256px);
+  background-color: transparent;
+  height:  512px;
+  border: none;
+}
+
 .btn-purchase {
     border: none;
     border-radius: 0;
     background-color: #ff0cc7;
     border-bottom: 4px solid #97144d;
     color: white;
+        font-family: 'Fira Mono';
     float: left;
     cursor: pointer;
 
@@ -217,6 +397,7 @@ export default {
   background: url("../assets/key__512.png");
   background-size: cover;
 }
+
 .backpack {
   height: 310px; 
   width: 300px;
@@ -379,14 +560,14 @@ a {
   animation: noise-2 3s linear infinite alternate-reverse, glitch 5s 5s infinite;
 }
 
-@keyframes glitch {
-  1%{
-    transform: rotateX(10deg) skewX(90deg);
-  }
-  2%{
-    transform: rotateX(0deg) skewX(0deg);
-  }
-}
+// @keyframes glitch {
+//   1%{
+//     transform: rotateX(10deg) skewX(90deg);
+//   }
+//   2%{
+//     transform: rotateX(0deg) skewX(0deg);
+//   }
+// }
 
 @keyframes noise-1 {
   $steps: 30;
@@ -486,8 +667,8 @@ a {
 }
 
 .anim-typewriter{
-  animation: typewriter 4s steps(44) 1s 1 normal both,
-             blinkTextCursor 500ms steps(44) infinite normal;
+  animation: typewriter 2s steps(44) 2s 1 normal both,
+             blinkTextCursor 250ms steps(44) infinite normal;
              width: 0;
 }
 @keyframes typewriter{
@@ -504,12 +685,22 @@ a {
 .item-detail {
   background-color: black;
   position: fixed; 
+  z-index: 3;
+  overflow: hidden;
   width: 700px;
   top: 100px;
   height: 700px;
   left: calc(50% - 350px);
+  &.mint {
+    height: 550px; 
+     left: calc(50% - 250px);
+    width: 500px; 
+    background-color: #1e1c1f;
+    border-bottom: 7px solid black;
+  }
   .item-close {
     color: white;
+    z-index: 5;
     position: absolute;
     top: 20px;
     right: 20px;

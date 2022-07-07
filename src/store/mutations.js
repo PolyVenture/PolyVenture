@@ -4,7 +4,7 @@ async setWeb3(state, web3) {
     const checkNetwork = async (web3) => {
         let network = "137"
         if(window.location.hostname == "localhost") {
-            network = "137"
+            network = "80001"
         }
         let con = await web3.eth.net.getId();
         if(con != network)  {
@@ -20,6 +20,8 @@ async setWeb3(state, web3) {
     window.ethereum.on('networkChanged', function(){
        checkNetwork(web3)
       });
+
+
     // web3.currentProvider.publicConfigStore.on('update', function(res, err) {
     //     if(res.selectedAddress) {
     //         state.account = res.selectedAddress
@@ -27,6 +29,20 @@ async setWeb3(state, web3) {
     //     if(err) console.log(err)
     // });
 },
+
+setPass(state, passStatus) {
+    state.hasPass = passStatus
+},
+
+setCurrentPass(state, idx) {
+    state.currentPass = idx
+},
+
+setPassList(state, list) {
+    state.passList = list
+    console.log(state.passList, "l")
+},
+
 setAccount(state, account) {
     state.account = account
 },

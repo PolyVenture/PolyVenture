@@ -29,6 +29,7 @@ export default {
       let accounts = await this.web3store.eth.getAccounts();
       this.$store.commit("setAccount", accounts[0]);
       this.$store.dispatch("getBalance", this.account);
+      this.$store.dispatch("getPass", this.account, this.web3store);
       this.getBalance = () => {
         this.$store.dispatch("getBalance", this.account);
         setTimeout(() => {
@@ -47,11 +48,28 @@ export default {
       let ethereum = window.ethereum;
       let web3 = new window.Web3(ethereum);
       this.$store.commit("setWeb3", web3);
+      console.log("ONE")
       this.getAccounts();
+      window.ethereum.on('accountsChanged', () => {
+        console.log("accountchange")
+       this.getAccounts()
+      })
+      window.ethereum.on('disconnect', () => {
+        console.log("disconnect")
+       this.getAccounts()
+      })
     } else if (window.web3) {
       // legacy provider system
+            console.log("TWO")
       let web3 = new window.Web3(window.web3.currentProvider);
       this.$store.commit("setWeb3", web3);
+
+      window.ethereum.on('accountsChanged', () => {
+       this.getAccounts()
+      })
+      window.ethereum.on('disconnect', () => {
+       this.getAccounts()
+      })
       this.getAccounts();
     }
   }

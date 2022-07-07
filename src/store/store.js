@@ -18,8 +18,10 @@ export const store = new Vuex.Store({
     state: {
         web3: null,
         account: "",
+        hasPass: false,
+        passList: [],
         balance: 0,
-        activeGames: [],
+        currentPass: 0,
         wrongNetworkMessage: '',
     },
     getters,
