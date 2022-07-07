@@ -1,5 +1,5 @@
 <template>
-<p class="warn-mess" v-if="wrongNetworkMessage.length > 0">{{wrongNetworkMessage}}</p>
+<!-- <p class="warn-mess" v-if="wrongNetworkMessage.length > 0">{{wrongNetworkMessage}}</p> -->
   <router-view></router-view>
 </template>
 

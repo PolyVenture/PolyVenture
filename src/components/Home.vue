@@ -121,6 +121,8 @@ export default {
       inputString: "",
       currentStep: 1,
       backpackEnabled: false,
+      forestExplained: false,
+      ropeDiscovered: false,
       detailOpen: false,
       loadedImage: "",
       NFTLoading: false,
@@ -252,73 +254,156 @@ export default {
       setTimeout(() => {
         this.updateScroll()
       }, delay + 1500)
-
-
     },
-    // no checkpoint -> check for start
-    // checkpoint 1 -> check for yes, open, ok (positive words)
-    // checkpoint 2 -> 
 
-    checkpoint1: function(input) {
-      if(input === 'start') {
-        this.previousCommands.push({char: 'sug', message: "// simulation booted //"})
-         this.delaySend("computer", "you wake up on a beach", 2500)
-        this.delaySend("computer", "there is a backpack on the sand", 5000)
-        this.delaySend("computer", "open backpack?", 7500)
-        this.currentStep++;
-      }
-    },
     updateScroll(){
       var container = this.$el.querySelector("#con");
       console.log("container", container)
       console.log(container)
       if(container) container.scrollTop = 500000;
     },
-    checkpoint2: function(input) {
-      if(input === 'open' || input === 'yes' || input === 'ok') {
-        this.previousCommands.push({char: 'computer', message: "you open the backpack"})
-        setTimeout(() => {this.backpackEnabled = true }, 2500)
 
-        if(!this.backpackEnabled) {
-          this.delaySend("computer", "the backpack contains a key", 3000)
-          this.delaySend("sug", "I should give the key a closer look", 7000)
-        }
-        this.delaySend("computer", "there are 2 paths from here.", 10000)
-        this.delaySend("computer", "The road north leads towards a town", 13000)
-        this.delaySend("computer", "The road south leads towards a forest", 16000)
 
-        this.currentStep++;
+    // program boot
+    checkpoint1: function() {
+      // empty
+    },
+
+    checkpoint1Handler: function(input) {
+      if(input === 'start') {
+        this.previousCommands.push({char: 'sug', message: "// simulation booted //"})
+        this.delaySend("computer", "you wake up on a beach", 2500)
+        this.checkpoint2();
       }
+    },
+
+    // BEACH
+    checkpoint2: function() {
+      this.currentStep = 2;
+      if(!this.backpackEnabled) {
+        this.delaySend("computer", "there is a backpack on the sand", 5000)
+        this.delaySend("computer", "open backpack?", 7500)
+      } else {
+        this.delaySend("computer", "you are back on the beach", 0)
+        this.delaySend("computer", "there isn't much to do here", 2500)
+        this.delaySend("computer", "The path north leads towards a town", 5000)
+        this.delaySend("computer", "The path east leads towards a forest", 7500)
+      }
+
+      },
+      checkpoint2Handler: function(input) {
+        if(!this.backpackEnabled) {
+          if(input === 'open' || input === 'yes' || input === 'ok') {
+          this.previousCommands.push({char: 'computer', message: "you open the backpack"})
+          setTimeout(() => {this.backpackEnabled = true }, 2500)
+          this.delaySend("computer", "the backpack contains a key", 2500)
+          this.delaySend("puzzle", "I should give the key a closer look", 5000)
+          this.delaySend("computer", "there are 2 paths from here.", 7500)
+          this.delaySend("computer", "The path north leads towards a town", 10000)
+          this.delaySend("computer", "The path east leads towards a forest", 12500)
+         }
+         if(input === 'leave' || input === 'no') {
+            this.delaySend("computer", "I will ignore the backpack", 0)
+            this.delaySend("computer", "there are 2 paths from here.", 2500)
+            this.delaySend("computer", "The path north leads towards a town", 5000)
+            this.delaySend("computer", "The path east leads towards a forest", 7500)
+         } 
+        }
+        if(input === 'east' || input === 'forest') {
+          this.checkpoint3()
+        }
+        if(input === 'north' || input === 'town') {
+          this.checkpoint4()
+        }
+      
       },
 
-      checkpoint3: function(input) {
-        if(input === 'south' || input === 'forest') {
+      // FOREST 
+      checkpoint3: function() {
+        this.currentStep = 3;
+        if(this.ladderDiscovered) {
           this.delaySend("computer", "You enter the forest", 0)
-          this.delaySend("computer", "a voice calls", 2500)
-          this.delaySend("forest", `'you must be participant ${this.currentPass}'`, 5000)
-          this.delaySend("forest", "help me solve this riddle and I will", 8000)
-          this.delaySend("forest", "grant you access to the forest", 12000)
-
-          this.delaySend("puzzle", "4 9 3 6 ", 14000)
-          this.delaySend("puzzle", "4 2 0 8", 16000)
-          this.delaySend("puzzle", "8 1 0 8", 18000)
-          this.delaySend("puzzle", "9 9 8 ?", 20000)
-
-
-
-          this.delaySend("sug", "you can also return to the", 22000)
-          this.delaySend("sug", "beach with the `back' command",24000)
-      
+          this.delaySend("computer", "There is not much to do here", 2500)
+          this.delaySend("computer", "You can go back to the beach", 5000)
+          this.delaySend("computer", "Or take the rope down", 7500)
+        } else {
+         if(!this.forestExplained) {
+          this.delaySend("computer", "You enter the forest", 0)
+          this.delaySend("computer", "There is a giant crater", 2500)
+          this.delaySend("computer", "in front of you", 5000)
+          this.delaySend("computer", "a voice calls", 7500)
+          this.delaySend("forest", `'you must be participant ${this.currentPass}'`, 10000)
+          this.delaySend("forest", "help me solve this puzzle and I will", 12000)
+          this.delaySend("forest", "help you", 14000)
+          this.forestExplained = true; 
+        } else {
+          this.delaySend("computer", "You enter the forest", 0)
+          this.delaySend("computer", "a voice calls again", 2500)
+          this.delaySend("forest", `'ah participant ${this.currentPass} again'`, 5000)
+          this.delaySend("forest", "did you come back to", 8000)
+          this.delaySend("forest", "solve my puzzle?", 10000)
+          this.delaySend("forest", "or do you just want to look", 12500)
+          this.delaySend("forest", "at the crater?", 15000)
         }
 
-        if(input === 'north' || input === 'town') {
-          this.delaySend("computer", "The forest", 2500)
-      } 
-    },
+        this.delaySend("puzzle", "4 9 3 6 ", 16500)
+        this.delaySend("puzzle", "4 2 0 8", 17500)
+        this.delaySend("puzzle", "8 1 0 8", 18500)
+        this.delaySend("puzzle", "9 9 8 ?", 19000)
+
+        this.delaySend("puzzle", "What is ?", 20000)
+
+        this.delaySend("sug", "you can also return to the", 24000)
+        this.delaySend("sug", "beach with the `back' command",26000)
+        }
+
+      },
+      checkpoint3Handler: function(input) {
+        if(input === 'back' || input === 'beach') {
+          this.checkpoint2()
+        }
+        if(input === 'look', input === 'look at crater') {
+          this.delaySend("forest", "not much to see, just a big hole", 0)
+        }
+        if(this.ropeDiscovered) {
+          if(input === 'ladder' || input === 'down' || input === 'yes' || input === 'climb' || input === 'rope') {
+            this.checkpoint7()
+          }
+        }
+
+        if(input === '1' && !this.ropeDiscovered) {
+          this.delaySend("forest", "you did it!", 0)
+          this.delaySend("forest", "we will meet again", 2500)
+          this.delaySend("forest", "take this, it might help", 5000)
+          this.delaySend("computer", "you receive a rope", 7500)
+          this.delaySend("computer", "you can use this rope to climb down", 10000)
+          this.delaySend("forest", "climb rope down?", 12500)
+          this.ropeDiscovered = true;
+        }
+      },
+      // town
+      checkpoint4: function() {
+        this.delaySend("computer", "You start walking towards", 2500)
+        this.delaySend("computer", "the town. T", 2500)
+      },
+
+      checkpoint7: function() {
+        this.delaySend("computer", "The ladder takes you into a", 0)
+        this.delaySend("computer", "deep hole.", 2500)
+      },
+
+      checkpoint7Handler:function() {
+
+      },
+    
     handleEnterKey: function() {
       this.previousCommands.push({char: 'user', message: this.inputString})
-      this["checkpoint" + this.currentStep](this.inputString.toLowerCase())
+      this["checkpoint" + this.currentStep + "Handler"](this.inputString.toLowerCase())
       this.inputString = ""
+      setTimeout(() => {
+        this.updateScroll()
+      }, 100)
+      console.log(this.currentStep)
     }
   },
     mounted() {
