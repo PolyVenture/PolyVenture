@@ -40,7 +40,6 @@ setCurrentPass(state, idx) {
 
 setPassList(state, list) {
     state.passList = list
-    console.log(state.passList, "l")
 },
 
 setAccount(state, account) {

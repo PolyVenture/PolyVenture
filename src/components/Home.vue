@@ -35,9 +35,11 @@
               <div v-for="item in previousCommands" :key="item" style="width: 700px; margin-left:5px;" id="conwrap" class="conwrap">
                 <p v-if="item.char === 'user'" style="text-transform:uppercase;">> {{item.message}}</p>
                 <p v-if="item.char === 'sug'" class="anim-typewriter" style="color: white; height: 20px!important;  overflow: hidden; text-transform:uppercase;">{{item.message}}</p>
-                <p v-if="item.char === 'computer'" class="anim-typewriter" style="height: 20px!important;  overflow: hidden; color: rgb(235 0 255);font-weight: 800; opacity: 0; text-transform:uppercase;">{{item.message}}</p>
+                <p v-if="item.char === 'computer'" class="anim-typewriter" style="height: 20px!important;  overflow: hidden; ;font-weight: 800; opacity: 0; text-transform:uppercase;">{{item.message}}</p>
                 <p v-if="item.char === 'forest'" class="anim-typewriter" style="height: 20px!important;  overflow: hidden; color: #07c2a8;font-weight: 800; opacity: 0; text-transform:uppercase;">{{item.message}}</p>
                 <p v-if="item.char === 'puzzle'" class="anim-typewriter" style="height: 20px!important;  overflow: hidden; color: #ffc400;font-weight: 800; opacity: 0; text-transform:uppercase;">{{item.message}}</p>
+                <p v-if="item.char === 'death'" class="anim-typewriter" style="height: 20px!important;  overflow: hidden; color: red;font-weight: 800; opacity: 0; text-transform:uppercase;">{{item.message}}</p>
+
               </div>
               <div class="clearfix" style="margin-top: 10px; padding: 5px; position: fixed; bottom: 200px;">
               <p class="cursor">></p>
@@ -51,7 +53,8 @@
       <p class="bp-title">BACKPACK (1 item)</p>
        <div class="scroll" style="color: #E7E7E7; font-size: 12px; padding-top: 5px; color: #ffc107; text-align: center">owner: glassvault.eth</div>
       <div class="slot key__512" style="border-color: white" @click="openDetail('key__512')"></div>
-      <div class="slot"></div>
+      <div class="slot rope__512" style="border-color: white" v-if="ropeDiscovered" @click="openDetail('rope__512')"></div>
+      <div class="slot sword__512" style="border-color: white" v-if="swordDiscovered" @click="openDetail('sword__512')"></div>
       <div class="slot"></div>
       <div class="slot"></div>
       <div class="slot"></div>
@@ -123,6 +126,7 @@ export default {
       backpackEnabled: false,
       forestExplained: false,
       ropeDiscovered: false,
+      swordDiscovered: false,
       detailOpen: false,
       loadedImage: "",
       NFTLoading: false,
@@ -132,8 +136,8 @@ export default {
   watch: {
     currentPass() {
       if(this.previousCommands.length != 0) return 
-      this.delaySend('computer', `PASS HOLDER #(${this.currentPass}) IDENTIFIED `, 0)
-      this.delaySend('computer', 'USE COMMAND "START" TO START SIMULATION', 2500)
+      this.delaySend('computer', `> PASS HOLDER #(${this.currentPass}) IDENTIFIED `, 0)
+      this.delaySend('computer', '> USE COMMAND "START" TO BEGIN SIMULATION', 2500)
     },
     passList() {
       this.passChoice = this.passList[0];
@@ -154,7 +158,6 @@ export default {
     start(idx) {
       this.playpassEnabled = true
       this.$store.commit("setCurrentPass", idx)
-      console.log(idx)
     },
     async mintNFT() {
       this.NFTLoading = true;
@@ -166,7 +169,6 @@ export default {
         this.closeMint()
         this.NFTLoading = false;
       })
-      console.log('not')
       await this.$store.dispatch("getPass", this.account)
       this.NFTLoading = false;
     },
@@ -219,7 +221,6 @@ export default {
                     }
                   ]
                 }).then(() => console.log("done"))
-                console.log("done")
                  this.$store.commit("setWeb3", this.web3store);
               }
             }
@@ -258,8 +259,6 @@ export default {
 
     updateScroll(){
       var container = this.$el.querySelector("#con");
-      console.log("container", container)
-      console.log(container)
       if(container) container.scrollTop = 500000;
     },
 
@@ -269,11 +268,25 @@ export default {
       // empty
     },
 
+    restart() {
+        this.delaySend("sug", "// simulation restarted",0)
+        this.delaySend("computer", "you wake up", 2500)
+        if(this.backpackEnabled) {
+          this.delaySend("computer", "a backpack is in your hand", 5000)
+          this.delaySend("computer", "your head hurts", 7500)
+          setTimeout(() => { this.checkpoint2() }, 10000)
+        } else {
+          this.delaySend("computer", "your head hurts", 5000)
+          setTimeout(() => { this.checkpoint2() }, 7500)
+        }
+
+    },
+
     checkpoint1Handler: function(input) {
       if(input === 'start') {
         this.previousCommands.push({char: 'sug', message: "// simulation booted //"})
         this.delaySend("computer", "you wake up on a beach", 2500)
-        this.checkpoint2();
+        setTimeout(() => { this.checkpoint2() }, 5000)
       }
     },
 
@@ -281,10 +294,10 @@ export default {
     checkpoint2: function() {
       this.currentStep = 2;
       if(!this.backpackEnabled) {
-        this.delaySend("computer", "there is a backpack on the sand", 5000)
-        this.delaySend("computer", "open backpack?", 7500)
+        this.delaySend("computer", "there is a backpack on the sand", 0)
+        this.delaySend("computer", "open backpack?", 2500)
       } else {
-        this.delaySend("computer", "you are back on the beach", 0)
+        this.delaySend("sug", "you are back on the beach", 0)
         this.delaySend("computer", "there isn't much to do here", 2500)
         this.delaySend("computer", "The path north leads towards a town", 5000)
         this.delaySend("computer", "The path east leads towards a forest", 7500)
@@ -321,23 +334,23 @@ export default {
       // FOREST 
       checkpoint3: function() {
         this.currentStep = 3;
-        if(this.ladderDiscovered) {
-          this.delaySend("computer", "You enter the forest", 0)
+        if(this.ropeDiscovered) {
+          this.delaySend("sug", "You enter the forest", 0)
           this.delaySend("computer", "There is not much to do here", 2500)
           this.delaySend("computer", "You can go back to the beach", 5000)
           this.delaySend("computer", "Or take the rope down", 7500)
         } else {
          if(!this.forestExplained) {
-          this.delaySend("computer", "You enter the forest", 0)
+          this.delaySend("sug", "You enter the forest", 0)
           this.delaySend("computer", "There is a giant crater", 2500)
           this.delaySend("computer", "in front of you", 5000)
           this.delaySend("computer", "a voice calls", 7500)
           this.delaySend("forest", `'you must be participant ${this.currentPass}'`, 10000)
-          this.delaySend("forest", "help me solve this puzzle and I will", 12000)
-          this.delaySend("forest", "help you", 14000)
+          this.delaySend("forest", "help me solve this puzzle and you", 12000)
+          this.delaySend("forest", "will receive a gift", 14000)
           this.forestExplained = true; 
         } else {
-          this.delaySend("computer", "You enter the forest", 0)
+          this.delaySend("sug", "You enter the forest", 0)
           this.delaySend("computer", "a voice calls again", 2500)
           this.delaySend("forest", `'ah participant ${this.currentPass} again'`, 5000)
           this.delaySend("forest", "did you come back to", 8000)
@@ -353,20 +366,20 @@ export default {
 
         this.delaySend("puzzle", "What is ?", 20000)
 
-        this.delaySend("sug", "you can also return to the", 24000)
-        this.delaySend("sug", "beach with the `back' command",26000)
+        this.delaySend("sug", "you can also return to the", 22000)
+        this.delaySend("sug", "beach with the `back' command",24000)
         }
 
       },
       checkpoint3Handler: function(input) {
-        if(input === 'back' || input === 'beach') {
+        if(input === 'back' || input === 'beach' || input === 'head back') {
           this.checkpoint2()
         }
         if(input === 'look', input === 'look at crater') {
           this.delaySend("forest", "not much to see, just a big hole", 0)
         }
         if(this.ropeDiscovered) {
-          if(input === 'ladder' || input === 'down' || input === 'yes' || input === 'climb' || input === 'rope') {
+          if(input === 'climb down' || input === 'down' || input === 'yes' || input === 'climb' || input === 'rope') {
             this.checkpoint7()
           }
         }
@@ -375,21 +388,32 @@ export default {
           this.delaySend("forest", "you did it!", 0)
           this.delaySend("forest", "we will meet again", 2500)
           this.delaySend("forest", "take this, it might help", 5000)
-          this.delaySend("computer", "you receive a rope", 7500)
-          this.delaySend("computer", "you can use this rope to climb down", 10000)
-          this.delaySend("forest", "climb rope down?", 12500)
-          this.ropeDiscovered = true;
+          this.delaySend("sug", "you receive a rope", 7500)
+          this.delaySend("sug", "you can use this rope to climb down", 10000)
+          this.delaySend("forest", "climb rope down or head back?", 12000)
+          if(!this.backpackEnabled) {
+            this.delaySend("computer", "that backpack from the beach", 12000)
+            this.delaySend("computer", "might be useful to carry it", 14000)
+            this.delaySend("computer", "in case I need it later", 16000)
+            this.delaySend("forest", "climb rope down?", 18000)
+          }
+           setTimeout(() => { this.ropeDiscovered = true}, 7500)
         }
       },
       // town
       checkpoint4: function() {
         this.delaySend("computer", "You start walking towards", 2500)
-        this.delaySend("computer", "the town. T", 2500)
+        this.delaySend("computer", "the town. T", 5000)
       },
 
       checkpoint7: function() {
-        this.delaySend("computer", "The ladder takes you into a", 0)
-        this.delaySend("computer", "deep hole.", 2500)
+        this.delaySend("sug", "The rope takes you into a", 0)
+        this.delaySend("sug", "deep hole.", 2500)
+        this.delaySend("death", "you hear a loud creature.", 5000)
+        this.delaySend("death", "the creature approaches", 7500)
+        this.delaySend("death", "you are unable to defend yourself", 10000)
+        setTimeout(() => { this.restart()}, 13000)
+
       },
 
       checkpoint7Handler:function() {
@@ -482,6 +506,19 @@ div::-webkit-scrollbar {
   background: url("../assets/key__512.png");
   background-size: cover;
 }
+
+
+.rope__512 {
+  background: url("../assets/rope__512.png");
+  background-size: cover;
+}
+
+.sword__512 {
+  background: url("../assets/sword__512.png");
+  background-size: cover;
+}
+
+
 
 .backpack {
   height: 310px; 

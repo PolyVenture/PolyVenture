@@ -48,7 +48,6 @@ export default {
       let ethereum = window.ethereum;
       let web3 = new window.Web3(ethereum);
       this.$store.commit("setWeb3", web3);
-      console.log("ONE")
       this.getAccounts();
       window.ethereum.on('accountsChanged', () => {
         console.log("accountchange")
@@ -60,7 +59,6 @@ export default {
       })
     } else if (window.web3) {
       // legacy provider system
-            console.log("TWO")
       let web3 = new window.Web3(window.web3.currentProvider);
       this.$store.commit("setWeb3", web3);
 
