@@ -126,6 +126,7 @@ export default {
       backpackEnabled: false,
       forestExplained: false,
       ropeDiscovered: false,
+      lockSolved: false,
       swordDiscovered: false,
       detailOpen: false,
       loadedImage: "",
@@ -270,14 +271,15 @@ export default {
 
     restart() {
         this.delaySend("sug", "// simulation restarted",0)
-        this.delaySend("computer", "you wake up", 2500)
+        this.delaySend("sug", "// chapter - 01", 2500)
+        this.delaySend("computer", "you wake up", 5000)
         if(this.backpackEnabled) {
-          this.delaySend("computer", "a backpack is in your hand", 5000)
+          this.delaySend("computer", "a backpack is in your hand", 7500)
+          this.delaySend("computer", "your head hurts", 10000)
+          setTimeout(() => { this.checkpoint2() }, 12500)
+        } else {
           this.delaySend("computer", "your head hurts", 7500)
           setTimeout(() => { this.checkpoint2() }, 10000)
-        } else {
-          this.delaySend("computer", "your head hurts", 5000)
-          setTimeout(() => { this.checkpoint2() }, 7500)
         }
 
     },
@@ -285,8 +287,9 @@ export default {
     checkpoint1Handler: function(input) {
       if(input === 'start') {
         this.previousCommands.push({char: 'sug', message: "// simulation booted //"})
-        this.delaySend("computer", "you wake up on a beach", 2500)
-        setTimeout(() => { this.checkpoint2() }, 5000)
+        this.delaySend("sug", "// chapter - 01", 2500)
+        this.delaySend("computer", "you wake up on a beach", 5000)
+        setTimeout(() => { this.checkpoint2() }, 7500)
       }
     },
 
@@ -402,24 +405,135 @@ export default {
       },
       // town
       checkpoint4: function() {
-        this.delaySend("computer", "You start walking towards", 2500)
-        this.delaySend("computer", "the town. T", 5000)
+        this.currentStep = 4;
+        if(this.swordDiscovered) {
+         this.delaySend("computer", "You start walking towards the town", 0)
+         this.delaySend("computer", "You can still hear the alarms", 2500)
+         this.delaySend("computer", "coming from the mansion", 5000)
+         this.delaySend("computer", "You can keep walking north towards town", 7500)
+         this.delaySend("computer", "or walk back to the beach", 7500)
+
+        } else {
+        this.delaySend("computer", "You start walking towards", 0)
+        this.delaySend("computer", "the town. There is a large mansion", 2500)
+        this.delaySend("computer", "in the distance. Approach mansion?", 5000)
+        // checkpoint 8
+        this.delaySend("sug", "You can also keep walking north", 7500)
+        this.delaySend("sug", "towards town or head back", 10000)
+        this.delaySend("sug", "to the beach", 12500)
+        // checkpoint 9 
+        }
+
+      },
+
+      checkpoint4Handler: function(input) {
+        if(input === 'back' || input === 'beach' || input === 'head back') {
+          this.checkpoint2()
+        }
+        if(input === 'enter' || input === 'approach mansion' || input === 'yes' || input ==='approach') {
+          if(this.swordDiscovered) {
+            this.delaySend("computer", "that's not a great idea.", 0)
+          }
+          
+          else if(this.lockSolved) {
+            // enter mansion
+            this.checkpoint1()
+          } else {
+            // solve lock puzzle
+            this.checkpoint8()
+          }
+        }
+        if(input === 'no' || input === 'north' || input === 'town' || input === 'go north') {
+          this.checkpoint9()
+        }
       },
 
       checkpoint7: function() {
+        this.currentStep = 7;
         this.delaySend("sug", "The rope takes you into a", 0)
         this.delaySend("sug", "deep hole.", 2500)
         this.delaySend("death", "you hear a loud creature.", 5000)
-        this.delaySend("death", "the creature approaches", 7500)
-        this.delaySend("death", "you are unable to defend yourself", 10000)
-        setTimeout(() => { this.restart()}, 13000)
+        // if you have a sword new options are available
+        if(this.swordDiscovered) {
+          this.delaySend("computer", "you draw your knife", 7500)
+          this.delaySend("computer", "and slash the creature", 10000)
+          this.delaySend("computer", "the creature flees", 12500)
+          this.delaySend("computer", "you find a note", 15000)
 
+        } else {
+          this.delaySend("death", "the creature approaches", 7500)
+          this.delaySend("death", "you are unable to defend yourself", 10000)
+          setTimeout(() => { this.restart()}, 13000)
+        }
       },
 
       checkpoint7Handler:function() {
 
       },
-    
+
+      checkpoint8: function() {
+        this.currentStep = 8;
+        this.delaySend("computer", "you approach the mansion gate", 0)
+        this.delaySend("computer", "there is a keypad locking the gate", 2500)
+        this.delaySend("puzzle", "It requires me to enter a ", 5000)
+        this.delaySend("puzzle", "4 digit code", 7500)
+        this.delaySend("sug", "you can always go back", 10000)
+        this.delaySend("sug", "with the 'back' command", 12500)
+      },
+
+      checkpoint8Handler: function(input) {
+        // 4912
+        if(input === '4912') {
+          // keypad sovled
+          this.checkpoint11()
+        }
+        if(input === 'back') {
+          this.checkpoint4()
+        }
+      },
+
+      checkpoint11: function() {
+        this.currentStep = 11;
+        this.delaySend("computer", "the lock opens", 0)
+        this.delaySend("computer", "you walk towards the front of", 2500)
+        this.delaySend("computer", "the mansion. The front door is blocked", 5000)
+        this.delaySend("computer", "One of the windows on the second floor", 7500)
+        this.delaySend("computer", "is open.", 10000)
+
+        if(this.ropeDiscovered) {
+          this.delaySend("computer", "use rope to climb?", 12500)
+        } else {
+          this.delaySend("computer", "I don't have anything to ", 12500)
+          this.delaySend("computer", "climb inside.", 15000)
+        }
+      },
+
+      checkpoint11Handler: function(input) {
+        if(input === 'back') {
+          this.checkpoint4();
+        }
+        if(input === 'climb' || input === 'yes' || input === 'window') {
+          this.checkpoint12()
+        }
+      },
+
+      checkpoint12: function() {
+        this.currentStep = 12;
+        this.delaySend("computer", "you climb through the window and find", 0)
+        this.delaySend("computer", "yourself standing inside a large room.", 2500)
+        this.delaySend("computer", "there is a sword mounted on the wall.", 5000)
+        this.delaySend("computer", "you take the sword.", 7500)
+
+        this.delaySend("death", "an alarm sounds.", 11000)
+        this.delaySend("death", "I am leaving.", 13500)
+        setTimeout(() => { this.checkpoint4() }, 13500) 
+         setTimeout(() => {this.swordDiscovered = true }, 5000)
+      },
+
+      checkpoint12Handler: function() {
+
+      },
+
     handleEnterKey: function() {
       this.previousCommands.push({char: 'user', message: this.inputString})
       this["checkpoint" + this.currentStep + "Handler"](this.inputString.toLowerCase())
