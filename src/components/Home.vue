@@ -1,10 +1,12 @@
 <template>
   <div class="main" @keyup.enter="handleEnterKey">
     <div class="container">
-      <div class="col-md-4 col-md-offset-4">
+      <div class="col-md-12">
         <div class="console">
+          <div class="col-md-5">
            <div class="glitch" style="margin-top: 100px" v-if="!playpassEnabled" data-text="POLYVENTURE">POLYVENTURE</div>
            <div class="glitch" v-if="playpassEnabled" data-text="POLYVENTURE">POLYVENTURE</div>
+          </div>
             <div class="scanlines"></div>
 
             <div v-if="!playpassEnabled" style="position: relative; z-index: 2; width: 700px">
@@ -31,26 +33,27 @@
 
             </div>
 
-          <div class="con" v-if="playpassEnabled" id="con" style="height: 400px; overflow: scroll; scrollbar-width: none;  padding-bottom: 50px;">
+          <div class="con col-md-6" v-if="playpassEnabled" id="con" style="height: 400px; overflow: scroll; scrollbar-width: none;  padding-bottom: 50px;">
               <div v-for="item in previousCommands" :key="item" style="width: 700px; margin-left:5px;" id="conwrap" class="conwrap">
                 <p v-if="item.char === 'user'" style="text-transform:uppercase;">> {{item.message}}</p>
                 <p v-if="item.char === 'sug'" class="anim-typewriter" style="color: white; height: 20px!important;  overflow: hidden; text-transform:uppercase;">{{item.message}}</p>
                 <p v-if="item.char === 'computer'" class="anim-typewriter" style="height: 20px!important;  overflow: hidden; ;font-weight: 800; opacity: 0; text-transform:uppercase;">{{item.message}}</p>
-                <p v-if="item.char === 'forest'" class="anim-typewriter" style="height: 20px!important;  overflow: hidden; color: #07c2a8;font-weight: 800; opacity: 0; text-transform:uppercase;">{{item.message}}</p>
+                <p v-if="item.char === 'forest'" class="anim-typewriter" style="height: 20px!important;  overflow: hidden; color: #00ffa5;font-weight: 800; opacity: 0; text-transform:uppercase;">{{item.message}}</p>
                 <p v-if="item.char === 'puzzle'" class="anim-typewriter" style="height: 20px!important;  overflow: hidden; color: #ffc400;font-weight: 800; opacity: 0; text-transform:uppercase;">{{item.message}}</p>
                 <p v-if="item.char === 'death'" class="anim-typewriter" style="height: 20px!important;  overflow: hidden; color: red;font-weight: 800; opacity: 0; text-transform:uppercase;">{{item.message}}</p>
 
               </div>
-              <div class="clearfix" style="margin-top: 10px; padding: 5px; position: fixed; bottom: 200px;">
+              <div class="clearfix" style="margin-top: 10px; width: 34%; padding: 5px; position: fixed; bottom: 200px;">
               <p class="cursor">></p>
               <input autofocus type="text" v-model="inputString" class="inp-cursor"  refs="cursi">
               </div>
-          </div>            
+          </div> 
+          <div v-if="playpassEnabled" class="img-hld col-md-6" :class="imgLoader"></div>           
         </div>
       </div>
     </div>
     <div class="backpack" v-if="backpackEnabled && playpassEnabled">
-      <p class="bp-title">BACKPACK (1 item)</p>
+      <p class="bp-title">BACKPACK</p>
        <div class="scroll" style="color: #E7E7E7; font-size: 12px; padding-top: 5px; color: #ffc107; text-align: center">owner: glassvault.eth</div>
       <div class="slot key__512" style="border-color: white" @click="openDetail('key__512')"></div>
       <div class="slot rope__512" style="border-color: white" v-if="ropeDiscovered" @click="openDetail('rope__512')"></div>
@@ -126,6 +129,9 @@ export default {
       backpackEnabled: false,
       forestExplained: false,
       ropeDiscovered: false,
+      noteDiscovered: false,
+      imgLoader: "",
+      bridgeStart: false,
       lockSolved: false,
       swordDiscovered: false,
       detailOpen: false,
@@ -271,8 +277,9 @@ export default {
 
     restart() {
         this.delaySend("sug", "// simulation restarted",0)
-        this.delaySend("sug", "// chapter - 01", 2500)
+        this.delaySend("sug", "// chapter - 01 //", 2500)
         this.delaySend("computer", "you wake up", 5000)
+        setTimeout(() => { this.imgLoader = "beach" }, 5000)
         if(this.backpackEnabled) {
           this.delaySend("computer", "a backpack is in your hand", 7500)
           this.delaySend("computer", "your head hurts", 10000)
@@ -287,8 +294,9 @@ export default {
     checkpoint1Handler: function(input) {
       if(input === 'start') {
         this.previousCommands.push({char: 'sug', message: "// simulation booted //"})
-        this.delaySend("sug", "// chapter - 01", 2500)
+        this.delaySend("sug", "// chapter - 01 //", 2500)
         this.delaySend("computer", "you wake up on a beach", 5000)
+        setTimeout(() => { this.imgLoader = "beach" }, 7500)
         setTimeout(() => { this.checkpoint2() }, 7500)
       }
     },
@@ -296,6 +304,7 @@ export default {
     // BEACH
     checkpoint2: function() {
       this.currentStep = 2;
+      this.imgLoader = "beach"
       if(!this.backpackEnabled) {
         this.delaySend("computer", "there is a backpack on the sand", 0)
         this.delaySend("computer", "open backpack?", 2500)
@@ -337,6 +346,7 @@ export default {
       // FOREST 
       checkpoint3: function() {
         this.currentStep = 3;
+        this.imgLoader = "forest"
         if(this.ropeDiscovered) {
           this.delaySend("sug", "You enter the forest", 0)
           this.delaySend("computer", "There is not much to do here", 2500)
@@ -393,12 +403,12 @@ export default {
           this.delaySend("forest", "take this, it might help", 5000)
           this.delaySend("sug", "you receive a rope", 7500)
           this.delaySend("sug", "you can use this rope to climb down", 10000)
-          this.delaySend("forest", "climb rope down or head back?", 12000)
+          this.delaySend("computer", "climb rope down or head back?", 12000)
           if(!this.backpackEnabled) {
             this.delaySend("computer", "that backpack from the beach", 12000)
             this.delaySend("computer", "might be useful to carry it", 14000)
             this.delaySend("computer", "in case I need it later", 16000)
-            this.delaySend("forest", "climb rope down?", 18000)
+            this.delaySend("computer", "climb rope down?", 18000)
           }
            setTimeout(() => { this.ropeDiscovered = true}, 7500)
         }
@@ -407,6 +417,7 @@ export default {
       checkpoint4: function() {
         this.currentStep = 4;
         if(this.swordDiscovered) {
+        this.imgLoader = "intersection"
          this.delaySend("computer", "You start walking towards the town", 0)
          this.delaySend("computer", "You can still hear the alarms", 2500)
          this.delaySend("computer", "coming from the mansion", 5000)
@@ -450,17 +461,22 @@ export default {
 
       checkpoint7: function() {
         this.currentStep = 7;
+        this.imgLoader = "forest-hole"
         this.delaySend("sug", "The rope takes you into a", 0)
         this.delaySend("sug", "deep hole.", 2500)
         this.delaySend("death", "you hear a loud creature.", 5000)
+        setTimeout(() => { this.imgLoader = "creature" }, 5000)
         // if you have a sword new options are available
         if(this.swordDiscovered) {
           this.delaySend("computer", "you draw your knife", 7500)
           this.delaySend("computer", "and slash the creature", 10000)
           this.delaySend("computer", "the creature flees", 12500)
           this.delaySend("computer", "you find a note", 15000)
+          this.delaySend("puzzle", "I should inspect the note", 17500)
+          this.noteDiscovered = true;
 
         } else {
+          
           this.delaySend("death", "the creature approaches", 7500)
           this.delaySend("death", "you are unable to defend yourself", 10000)
           setTimeout(() => { this.restart()}, 13000)
@@ -473,6 +489,7 @@ export default {
 
       checkpoint8: function() {
         this.currentStep = 8;
+        this.imgLoader = "mansion-gate"
         this.delaySend("computer", "you approach the mansion gate", 0)
         this.delaySend("computer", "there is a keypad locking the gate", 2500)
         this.delaySend("puzzle", "It requires me to enter a ", 5000)
@@ -492,8 +509,30 @@ export default {
         }
       },
 
+      checkpoint9: function() {
+        this.currentStep = 9;
+        this.bridgeStart = true;
+        this.delaySend("computer", "on your way to town", 0)
+        this.delaySend("computer", "you approach a bridge", 2500)
+        this.delaySend("computer", "there is a guard on the bridge", 5000)
+        this.delaySend("computer", "he speaks to you:", 7500)
+
+        this.delaySend("puzzle", "only those that are invited", 10000)
+        this.delaySend("puzzle", "are allowed to pass", 12500)
+
+        this.delaySend("sug", "you can always go back", 15000)
+        this.delaySend("sug", "with the 'back' command", 17500)
+      },
+
+      checkpoint9Handler: function(input) {
+        if(input === 'back') {
+          this.checkpoint4()
+        }
+      },
+
       checkpoint11: function() {
         this.currentStep = 11;
+        this.imgLoader = "mansion-exterior"
         this.delaySend("computer", "the lock opens", 0)
         this.delaySend("computer", "you walk towards the front of", 2500)
         this.delaySend("computer", "the mansion. The front door is blocked", 5000)
@@ -519,6 +558,7 @@ export default {
 
       checkpoint12: function() {
         this.currentStep = 12;
+        this.imgLoader = "mansion-interior"
         this.delaySend("computer", "you climb through the window and find", 0)
         this.delaySend("computer", "yourself standing inside a large room.", 2500)
         this.delaySend("computer", "there is a sword mounted on the wall.", 5000)
@@ -611,7 +651,7 @@ div::-webkit-scrollbar {
   background-color: #333;
   height: 30px;
   width: 300px;
-  bottom: 40px;
+  bottom: 20px;
   right: 40px;
 
 }
@@ -621,6 +661,58 @@ div::-webkit-scrollbar {
   background-size: cover;
 }
 
+.img-hld {
+    background-color: green;
+    width: 40%;
+    margin-left: 10%;
+    border-radius: 0px;
+    margin-top: 0px;
+    height: 290px;
+    float: left;
+    display: none;
+    text-align: right;
+    border: 4px solid #0f0e0e;
+
+    &.beach {
+      background: url("../assets/bg_beach.png");
+      display: block;
+    }
+
+    &.forest {
+      background: url("../assets/bg_forest.png");
+      display: block;
+    }
+
+    &.forest-hole {
+      background: url("../assets/forest-hole.png");
+      display: block;
+    }
+
+    &.intersection {
+      background: url("../assets/intersection.png");
+      display: block;
+    }
+
+    &.mansion-gate {
+      background: url("../assets/mansion-gate.png");
+      display: block;
+    }
+
+    &.mansion-exterior {
+      background: url("../assets/mansion-exterior.png");
+      display: block;
+    }
+
+    &.mansion-interior {
+      background: url("../assets/mansion-interior.png");
+      display: block;
+    }
+
+    &.creature {
+      background: url("../assets/creature.png");
+      display: block;
+    }
+}
 
 .rope__512 {
   background: url("../assets/rope__512.png");
@@ -635,11 +727,11 @@ div::-webkit-scrollbar {
 
 
 .backpack {
-  height: 310px; 
+  height: 250px; 
   width: 300px;
   position:fixed;
   padding-left: 8px;
-  bottom: 40px;
+  bottom: 30px;
   right: 40px;
   overflow: scroll;
   background-color: #151414;
@@ -681,6 +773,7 @@ div::-webkit-scrollbar {
   text-transform:uppercase;
   border: none!important;
   cursor: none!important;
+  width: 92%;
 caret-color: black;
   &:focus {
     outline: none!important;
@@ -696,7 +789,9 @@ caret-color: black;
   animation: blink 1s step-end infinite;
 }
 .con {
-  position: absolute;
+  float: left;
+  padding: 20px;
+    background-color: #231f1f1a;
 }
 .input-window {
   width: 500px; 
