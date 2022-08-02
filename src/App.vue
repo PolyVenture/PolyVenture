@@ -46,6 +46,7 @@ export default {
     } else if (window.ethereum) {
       // new provider system
       let ethereum = window.ethereum;
+      console.log(window.ethereum, "we")
       let web3 = new window.Web3(ethereum);
       this.$store.commit("setWeb3", web3);
       this.getAccounts();
@@ -59,6 +60,7 @@ export default {
       })
     } else if (window.web3) {
       // legacy provider system
+      console.log(window.web3.currentProvider, "cp")
       let web3 = new window.Web3(window.web3.currentProvider);
       this.$store.commit("setWeb3", web3);
 

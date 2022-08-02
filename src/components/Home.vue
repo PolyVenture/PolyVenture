@@ -112,7 +112,7 @@
         </p></div>
 
         <div class="mintable" v-if="mint[loadedImage.split('__512')[0]] == true">
-        <p>This item has already been minted to your wallet 
+        <p>This item has been minted to your Polygon wallet 
         <a class="btn btn-purchase" style="margin-top: 30px;" target="_blank" href="https://testnets.opensea.io/account?search%5BresultModel%5D=ASSETS&search%5BsortBy%5D=LAST_TRANSFER_DATE&search%5Bquery%5D=PolyVenture">View on OpenSea</a>
         </p></div>
 
@@ -175,7 +175,6 @@ export default {
       await this.getItemStatus()
       if(this.previousCommands.length != 0) return 
       this.delaySend('computer', `> PASS HOLDER #(${this.currentPass}) IDENTIFIED `, 0)
-      console.log("mint", this.mint.key)
       if(this.mint.key || this.mint.rope || this.mint.sword || this.mint.note) {
       this.delaySend('computer', '> PROGRESS FOUND', 2500)
       this.delaySend('computer', '> SYNCHRONISING WITH BLOCKCHAIN', 5000)
@@ -238,7 +237,6 @@ export default {
         this.mint.sword = itemStatus[2]
         this.mint.note = itemStatus[3]
       }
-      console.log(itemStatus)
     },
 
     async mintItem(item) {
@@ -246,7 +244,6 @@ export default {
       this.itemMintLoading = true;
       let itemsContract = await new this.web3store.eth.Contract(PolyVentureItems, "0x4aBf50132a6d56d8090fC954953BF31bC1cc5dD9");
       let funcName = "mint" + this.capitalize(item)
-      console.log(this.currentPass)
       await itemsContract.methods[funcName](this.account, this.currentPass).send({from: this.account, gas: '300000', gasPrice: '80000000000'}).on('transactionHash', (hash) => {
         this.itemMintTX = hash;
       }).on('confirmation', async() => {
@@ -256,7 +253,6 @@ export default {
       })
       // sync with blockchain
       this.getItemStatus()
-      this.itemMintLoading = false
 
     },
     async mintNFT() {
@@ -494,7 +490,7 @@ export default {
           this.delaySend("forest", "not much to see, just a big hole", 0)
         }
         if(this.ropeDiscovered) {
-          if(input === 'climb down' || input === 'down' || input === 'yes' || input === 'climb' || input === 'rope') {
+          if(input === 'climb down' || input === 'down' || input === 'rope down' || input === 'yes' || input === 'climb' || input === 'rope') {
             this.checkpoint7()
           }
         }
@@ -545,7 +541,7 @@ export default {
         if(input === 'back' || input === 'beach' || input === 'head back') {
           this.checkpoint2()
         }
-        if(input === 'enter' || input === 'approach mansion' || input === 'yes' || input ==='approach') {
+        if(input === 'enter' || input === 'approach mansion' || input == 'mansion' || input === 'yes' || input ==='approach') {
           if(this.swordDiscovered) {
             this.delaySend("computer", "that's not a great idea.", 0)
           }
@@ -558,7 +554,7 @@ export default {
             this.checkpoint8()
           }
         }
-        if(input === 'no' || input === 'north' || input === 'town' || input === 'go north') {
+        if(input === 'no' || input === 'north' || input === 'keep walking north' || input === 'keep walking' || input === 'walk north' || input === 'town' || input === 'go north') {
           this.checkpoint9()
         }
       },
@@ -578,7 +574,7 @@ export default {
           this.delaySend("computer", "you find a note", 15000)
           this.delaySend("puzzle", "I should inspect the note", 17500)
           setTimeout(() => { this.openDetail("note__512") }, 20000)
-          this.noteDiscovered = true;
+          setTimeout(() => { this.noteDiscovered = true }, 17500)
 
         } else {
           
@@ -622,8 +618,13 @@ export default {
         this.delaySend("computer", "there is a guard on the bridge", 5000)
         this.delaySend("computer", "he speaks to you:", 7500)
 
+        if(this.noteDiscovered) {
+        this.delaySend("puzzle", "you made it this far", 10000)
+        this.delaySend("puzzle", "but time needs to pass", 12500)
+        } else {
         this.delaySend("puzzle", "only those that are invited", 10000)
         this.delaySend("puzzle", "are allowed to pass", 12500)
+        }
 
         this.delaySend("sug", "you can always go back", 15000)
         this.delaySend("sug", "with the 'back' command", 17500)
@@ -687,11 +688,20 @@ export default {
       setTimeout(() => {
         this.updateScroll()
       }, 100)
-      console.log(this.currentStep)
     }
   },
     mounted() {
-     
+      console.log("> GLITCH")
+      console.log("> IS THIS A CLUE?")
+      console.log("The beach awaits")
+      console.log("The forest awaits")
+      console.log("The mansion awaits")
+      console.log("The forest awaits?")
+      console.log("The cave awaits?")
+      console.log("The bridge awaits?")
+      console.log("The CASTLE awaits")
+      console.log("IS THIS A CLUE?")
+      console.log("> PROBABLY MNSGHMF")
     }
 }
 </script>
