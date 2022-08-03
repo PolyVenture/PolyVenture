@@ -1,6 +1,6 @@
 <template>
   <div class="main" @keyup.enter="handleEnterKey">
-    <div class="container">
+    <div class="container desktop">
       <div class="col-md-12">
         <div class="console">
           <div class="col-md-5">
@@ -52,6 +52,16 @@
           <div v-if="playpassEnabled" class="img-hld col-md-6" :class="imgLoader"></div>           
         </div>
       </div>
+    </div>
+    <div class="mobile">
+       <div class="console">
+          <div class="col-md-5">
+           <div class="glitch" style="margin-top: 100px; position: absolute; text-align: center;" v-if="!playpassEnabled"  data-text="POLYVENTURE">POLYVENTURE</div>
+           <div class="glitch" v-if="playpassEnabled" style="position: absolute!important" data-text="POLYVENTURE">POLYVENTURE</div>
+          </div>
+            <div class="scanlines"></div>
+            </div>
+      <h2 style="margin-top: 200px; font-family: 'Fira Mono';color: #00de00; text-align: left; color: white;">Only available on desktop devices</h2>
     </div>
     <div class="backpack" v-if="backpackEnabled && playpassEnabled">
       <p class="bp-title">BACKPACK</p>
@@ -1071,6 +1081,19 @@ a {
 //   }
 // }
 
+
+.desktop {
+  @media(max-width: 880px) {
+    display: none;
+  }
+}
+
+.mobile {
+  display: none;
+  @media(max-width: 880px) {
+    display: block;
+  }
+}
 @keyframes noise-1 {
   $steps: 30;
   @for $i from 1 through $steps {
