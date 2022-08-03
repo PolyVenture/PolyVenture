@@ -61,7 +61,8 @@
           </div>
             <div class="scanlines"></div>
             </div>
-      <h2 style="margin-top: 200px; font-family: 'Fira Mono';color: #00de00; text-align: left; color: white;">Only available on desktop devices</h2>
+      <h2 style="margin-top: 200px; font-family: 'Fira Mono';color: #6aff00; text-align: left;">[REDACTED]</h2>
+      <h2 style="margin-top: 200px; font-family: 'Fira Mono';color: #6aff00; text-align: left;">Only available on desktop devices</h2>
     </div>
     <div class="backpack" v-if="backpackEnabled && playpassEnabled">
       <p class="bp-title">BACKPACK</p>
