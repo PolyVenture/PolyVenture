@@ -41,8 +41,7 @@ export default {
   async created() {
     if (!window.web3 || !window.ethereum) {
       // redirect when no provider can be loaded
-      if (window.location.pathname != "/getwallet")
-        window.location.replace("/getwallet");
+
     } else if (window.ethereum) {
       // new provider system
       let ethereum = window.ethereum;
