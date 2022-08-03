@@ -9,19 +9,13 @@ export default {
         return commit("setBalance", balanceEth)
     },
 
-    // async getItems({commit, getters}, account) {
-    //     // let res = false;
-    //     // let web3 = getters.getWeb3;
-    //     // let itemContract = await new web3.eth.Contract(PolyVentureItems, "0x4aBf50132a6d56d8090fC954953BF31bC1cc5dD9");
-
-    // },
-
     async getPass({commit, getters}, account) {
         // get result from pass call 
         let res = false;
         let web3 = getters.getWeb3;
-        let nftContract = await new web3.eth.Contract(AccessCardNFT, "0xE5e3276A037490064F9092B5502f7b059263A320");
+        let nftContract = await new web3.eth.Contract(AccessCardNFT, "0xfC5aC5510D2834DC31884C8d6F6aFB1f7753Ee6c");
         const balance = await nftContract.methods.balanceOf(account).call()
+        console.log(balance)
         balance > 0 ? res = true : res = false
         commit("setPass", res)
 

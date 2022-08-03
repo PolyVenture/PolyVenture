@@ -60,7 +60,7 @@
       <div class="slot rope__512" style="border-color: white" v-if="ropeDiscovered" @click="openDetail('rope__512')"></div>
       <div class="slot sword__512" style="border-color: white" v-if="swordDiscovered" @click="openDetail('sword__512')"></div>
       <div class="slot note__512" style="border-color: white" v-if="noteDiscovered" @click="openDetail('note__512')"></div>
-      <div class="slot"></div>
+      <div class="slot pass__512" style="border-color: white" v-if="passDiscovered" @click="openDetail('pass__512')"></div>
       <div class="slot"></div>
       <div class="slot"></div>
       <div class="slot"></div>
@@ -104,7 +104,8 @@
       <div :class="loadedImage" style="width: 100%; height: 100%;"></div>
       <div class="mintable" v-if="mint[loadedImage.split('__512')[0]] == false && !itemMintLoading">
         <p>Items can be minted to your wallet. This will make the item tradeable will others. You can only mint every item once per pass. <strong>Further progression leads to rarer items.</strong> <br>
-        <a class="btn btn-purchase" style="margin-top: 30px;" @click="mintItem(loadedImage.split('__512')[0])">Mint {{loadedImage.split("__512")[0]}}</a>
+        <a v-if="loadedImage.split('__512')[0] != 'pass'" class="btn btn-purchase" style="margin-top: 30px;" @click="mintItem(loadedImage.split('__512')[0])">Mint {{loadedImage.split("__512")[0]}}</a>
+        <a v-if="loadedImage.split('__512')[0] == 'pass'" class="btn btn-purchase" style="margin-top: 30px;" @click="mintPass()">Mint Access Pass 2</a>
         </p></div>
 
       <div class="mintable" v-if="mint[loadedImage.split('__512')[0]] == false && itemMintLoading">
@@ -150,6 +151,7 @@ export default {
         rope: false, 
         sword: false,
         note: false,
+        pass: false,
       },
       itemMintTX: "",
       playpassEnabled: false,
@@ -161,6 +163,7 @@ export default {
       ropeDiscovered: false,
       swordDiscovered: false,
       noteDiscovered: false,
+      passDiscovered: false,
       imgLoader: "",
       bridgeStart: false,
       lockSolved: false,
@@ -220,6 +223,9 @@ export default {
         this.noteDiscovered = true
         this.forestExplained = true;
       }
+      if(this.mint.pass) {
+        this.passDiscovered = true;
+      }
     },
     capitalize(str) {
       const lower = str.toLowerCase();
@@ -230,20 +236,39 @@ export default {
       this.$store.commit("setCurrentPass", idx)
     },
     async getItemStatus() {
-      let itemsContract = await new this.web3store.eth.Contract(PolyVentureItems, "0x4aBf50132a6d56d8090fC954953BF31bC1cc5dD9");
+      let itemsContract = await new this.web3store.eth.Contract(PolyVentureItems, "0xdD4Ff147C3DAfD6abE64aa656B233D3ABd63199f");
       let itemStatus = await itemsContract.methods.mintStatus(this.currentPass).call()
-      if(itemStatus.length == 4) {
+      if(itemStatus.length == 5) {
         this.mint.key = itemStatus[0]
         this.mint.rope = itemStatus[1]
         this.mint.sword = itemStatus[2]
         this.mint.note = itemStatus[3]
+        this.mint.pass = itemStatus[4]
       }
     },
+
+
+    async mintPass() {
+      this.itemMintTX = ""
+      this.itemMintLoading = true;
+      let itemsContract = await new this.web3store.eth.Contract(PolyVentureItems, "0xdD4Ff147C3DAfD6abE64aa656B233D3ABd63199f");
+      await itemsContract.methods.mintAccessPass(this.account, this.currentPass, "carrier").send({from: this.account, gas: '300000', gasPrice: '80000000000'}).on('transactionHash', (hash) => {
+        this.itemMintTX = hash;
+      }).on('confirmation', async() => {
+        // sync with blockchain
+        this.getItemStatus()
+        this.itemMintLoading = false;
+      })
+      // sync with blockchain
+      this.getItemStatus()
+
+    },
+
 
     async mintItem(item) {
       this.itemMintTX = ""
       this.itemMintLoading = true;
-      let itemsContract = await new this.web3store.eth.Contract(PolyVentureItems, "0x4aBf50132a6d56d8090fC954953BF31bC1cc5dD9");
+      let itemsContract = await new this.web3store.eth.Contract(PolyVentureItems, "0xdD4Ff147C3DAfD6abE64aa656B233D3ABd63199f");
       let funcName = "mint" + this.capitalize(item)
       await itemsContract.methods[funcName](this.account, this.currentPass).send({from: this.account, gas: '300000', gasPrice: '80000000000'}).on('transactionHash', (hash) => {
         this.itemMintTX = hash;
@@ -258,7 +283,8 @@ export default {
     },
     async mintNFT() {
       this.NFTLoading = true;
-      let nftContract = await new this.web3store.eth.Contract(AccessCardNFT, "0xE5e3276A037490064F9092B5502f7b059263A320");
+      console.log("0xfC5aC5510D2834DC31884C8d6F6aFB1f7753Ee6c")
+      let nftContract = await new this.web3store.eth.Contract(AccessCardNFT, "0xfC5aC5510D2834DC31884C8d6F6aFB1f7753Ee6c");
       await nftContract.methods.mintTo(this.account).send({from: this.account, gas: '300000', gasPrice: '80000000000'}).on('transactionHash', (hash) => {
         this.txHash = hash
       }).on('confirmation', async() => {
@@ -424,7 +450,7 @@ export default {
           this.delaySend("computer", "there are 2 paths from here.", 7500)
           this.delaySend("computer", "The path north leads towards a town", 10000)
           this.delaySend("computer", "The path east leads towards a forest", 12500)
-          setTimeout(() => { this.openDetail("key__512") }, 17000)
+          setTimeout(() => { this.openDetail("key__512") }, 7500)
          }
          if(input === 'leave' || input === 'no') {
             this.delaySend("computer", "I will ignore the backpack", 0)
@@ -565,28 +591,36 @@ export default {
         setTimeout(() => { this.imgLoader = "forest-hole" }, 2500)
         this.delaySend("sug", "The rope takes you into a", 0)
         this.delaySend("sug", "deep hole.", 2500)
-        this.delaySend("death", "you hear a loud creature.", 5000)
-        setTimeout(() => { this.imgLoader = "creature" }, 7500)
-        // if you have a sword new options are available
-        if(this.swordDiscovered) {
-          this.delaySend("computer", "you draw your knife", 7500)
-          this.delaySend("computer", "and slash the creature", 10000)
-          this.delaySend("computer", "the creature flees", 12500)
-          this.delaySend("computer", "you find a note", 15000)
-          this.delaySend("puzzle", "I should inspect the note", 17500)
-          setTimeout(() => { this.openDetail("note__512") }, 20000)
-          setTimeout(() => { this.noteDiscovered = true }, 17500)
 
+
+        if(!this.noteDiscovered) {
+          this.delaySend("death", "you hear a loud creature.", 5000)
+          setTimeout(() => { this.imgLoader = "creature" }, 7500)
+          if(this.swordDiscovered) {
+            this.delaySend("computer", "you draw your sword", 7500)
+            this.delaySend("computer", "and slash the creature", 10000)
+            this.delaySend("computer", "the creature flees", 12500)
+            this.delaySend("computer", "you find a note", 15000)
+            this.delaySend("puzzle", "I should inspect the note", 17500)
+            setTimeout(() => { this.openDetail("note__512") }, 20000)
+            setTimeout(() => { this.noteDiscovered = true }, 17500)
+            this.delaySend("puzzle", "There is nothing left to do here", 20000)
+            this.delaySend("puzzle", "I should head back to the forest", 20000)
+          } else {
+            this.delaySend("death", "the creature approaches", 7500)
+            this.delaySend("death", "you are unable to defend yourself", 10000)
+            setTimeout(() => { this.restart()}, 13000)
+          }
         } else {
-          
-          this.delaySend("death", "the creature approaches", 7500)
-          this.delaySend("death", "you are unable to defend yourself", 10000)
-          setTimeout(() => { this.restart()}, 13000)
+          this.delaySend("puzzle", "There is nothing left to do here", 5000)
+          this.delaySend("puzzle", "I should head back to the forest", 7500)
         }
       },
 
-      checkpoint7Handler:function() {
-
+      checkpoint7Handler:function(input) {
+        if(input === 'back' || input === 'forest' || input === 'head back') {
+          this.checkpoint3()
+        }
       },
 
       checkpoint8: function() {
@@ -619,21 +653,31 @@ export default {
         this.delaySend("computer", "there is a guard on the bridge", 5000)
         this.delaySend("computer", "he speaks to you:", 7500)
 
-        if(this.noteDiscovered) {
-        this.delaySend("puzzle", "you made it this far", 10000)
-        this.delaySend("puzzle", "but time needs to pass", 12500)
-        } else {
-        this.delaySend("puzzle", "only those that are invited", 10000)
-        this.delaySend("puzzle", "are allowed to pass", 12500)
-        }
+        this.delaySend("puzzle", "invited guests may cross", 10000)
+        this.delaySend("puzzle", "to the land beyond the moss ", 12500)
+        this.delaySend("puzzle", "this invitation is part of a scroll", 15000)
+        this.delaySend("puzzle", "and it is located in a hole", 17500)
+        this.delaySend("puzzle", "once you know the secret word", 20000)
+        this.delaySend("puzzle", "my gift will be transferred", 22500)
 
-        this.delaySend("sug", "you can always go back", 15000)
-        this.delaySend("sug", "with the 'back' command", 17500)
+        this.delaySend("sug", "you can always go back", 25000)
+        this.delaySend("sug", "with the 'back' command", 27500)
       },
 
       checkpoint9Handler: function(input) {
         if(input === 'back') {
           this.checkpoint4()
+        }
+        if(input === 'carrier') {
+          this.delaySend("puzzle", "you may pass beyond", 2500)
+          this.delaySend("puzzle", "when the time comes you should", 5000)
+          this.delaySend("puzzle", "come back here to respond.", 7500)
+          this.delaySend("puzzle", "take my gift.", 10000)
+          this.delaySend("sug", "access key level 2 obtained.", 12500)
+          this.delaySend("computer", "CHAPTER 1 - CLEARED", 15000)
+          this.delaySend("computer", "CHAPTER 2 - AWAITING RELEASE", 17500)
+          setTimeout(() => { this.passDiscovered = true; }, 14000);
+          setTimeout(() => { this.openDetail("pass__512") }, 14000)
         }
       },
 
@@ -843,6 +887,11 @@ div::-webkit-scrollbar {
 
 .note__512 {
   background: url("../assets/note__512.png");
+  background-size: cover;
+}
+
+.pass__512 {
+  background: url("../assets/pass__512.png");
   background-size: cover;
 }
 
@@ -1145,7 +1194,7 @@ a {
   height: 500px;
   left: calc(50% - 250px);
   .mintable {
-    background-color: black;
+    background-color: #121111;
     width: 500px; 
     position: fixed;
     z-index: 5;

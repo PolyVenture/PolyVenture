@@ -199,6 +199,29 @@ export const PolyVentureItems = [
           "internalType": "uint256",
           "name": "tokenPassId",
           "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "passPhrase",
+          "type": "string"
+        }
+      ],
+      "name": "mintAccessPass",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenPassId",
+          "type": "uint256"
         }
       ],
       "name": "mintKey",
@@ -253,9 +276,9 @@ export const PolyVentureItems = [
       "name": "mintStatus",
       "outputs": [
         {
-          "internalType": "bool[4]",
+          "internalType": "bool[5]",
           "name": "",
-          "type": "bool[4]"
+          "type": "bool[5]"
         }
       ],
       "stateMutability": "view",
