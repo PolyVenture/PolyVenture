@@ -19,6 +19,7 @@
               </div>
               <div  v-if="wrongNetworkMessage.length === 0 && account">
                 <a class="btn btn-purchase" v-if="!hasPass" @click="openMint()">Mint a free Access Card</a>
+                
                 <p style="margin-top: 15px; font-weight: 600" v-if="hasPass">Access Card was found on your account. Choose your Access Card</p>
                 <div style="text-align: left;" v-if="hasPass">
                 <select v-model="passChoice"  style="margin-left: 0; text-align: left" class="select-spec">
@@ -298,7 +299,7 @@ export default {
       };
     },
     async requestPolygon() {
-        let chainId = 137
+        let chainId = 80001
         if (window.ethereum.networkVersion !== chainId) {
             try {
               await window.ethereum.request({
@@ -312,10 +313,10 @@ export default {
                   method: 'wallet_addEthereumChain',
                   params: [
                     {
-                      chainName: 'Polygon Mainnet',
+                      chainName: 'Polygon Mumbai',
                       chainId: this.web3store.utils.toHex(chainId),
                       nativeCurrency: { name: 'MATIC', decimals: 18, symbol: 'MATIC' },
-                      rpcUrls: ['https://polygon-rpc.com/']
+                      rpcUrls: ['https://rpc-mumbai.maticvigil.com']
                     }
                   ]
                 }).then(() => console.log("done"))
