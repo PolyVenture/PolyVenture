@@ -450,7 +450,7 @@ export default {
           this.delaySend("computer", "there are 2 paths from here.", 7500)
           this.delaySend("computer", "The path north leads towards a town", 10000)
           this.delaySend("computer", "The path east leads towards a forest", 12500)
-          setTimeout(() => { this.openDetail("key__512") }, 7500)
+          setTimeout(() => { this.openDetail("key__512") }, 8500)
          }
          if(input === 'leave' || input === 'no') {
             this.delaySend("computer", "I will ignore the backpack", 0)
@@ -702,7 +702,7 @@ export default {
         if(input === 'back') {
           this.checkpoint4();
         }
-        if(input === 'climb' || input === 'yes' || input === 'window') {
+        if(input === 'climb' || input === 'rope' || input === 'use rope' ||  input === 'yes' || input === 'window') {
           this.checkpoint12()
         }
       },
