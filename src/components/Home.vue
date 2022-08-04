@@ -19,7 +19,7 @@
               </div>
               <div  v-if="wrongNetworkMessage.length === 0 && account">
                 <a class="btn btn-purchase" style="margin-right: 20px" v-if="!hasPass" @click="openMint()">Mint a free Access Card</a>
-                <a class="btn btn-purchase" href="https://mumbaifaucet.com/" target="_blank" style="background-color: #0985ff; border-bottom: 4px solid #252539">Use Testnet Faucet</a>
+                <a class="btn btn-purchase" v-if="!hasPass" href="https://mumbaifaucet.com/" target="_blank" style="background-color: #0985ff; border-bottom: 4px solid #252539">Use Testnet Faucet</a>
                 
                 <p style="margin-top: 15px; font-weight: 600" v-if="hasPass">Access Card was found on your account. Choose your Access Card</p>
                 <div style="text-align: left;" v-if="hasPass">
