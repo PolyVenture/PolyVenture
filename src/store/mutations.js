@@ -5,7 +5,7 @@ async setWeb3(state, web3) {
         let network = "80001"
         let con = await web3.eth.net.getId();
         if(con != network)  {
-            state.wrongNetworkMessage = `WARNING: You are connected to the wrong network. You will not be able to interact with the platform properly until you switch to Polygon. `
+            state.wrongNetworkMessage = `WARNING: You are connected to the wrong network. You will not be able to interact with the platform properly until you switch to Polygo Mumbai. `
         }
         else {
             state.wrongNetworkMessage = ''

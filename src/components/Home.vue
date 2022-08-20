@@ -13,7 +13,7 @@
               <p>To play PolyVenture you need to obtain an Access Card. During Alpha phase the Access Card is free</p>
 
               <div v-if="wrongNetworkMessage.length > 0 || !account">
-                <a class="btn btn-purchase" v-if="wrongNetworkMessage.length > 0 && account" style="float: left; margin-right: 20px; width: 300px" @click="requestPolygon()">Switch to Polygon Network</a>
+                <a class="btn btn-purchase" v-if="wrongNetworkMessage.length > 0 && account" style="float: left; margin-right: 20px; width: 350px" @click="requestPolygon()">Switch to Polygon Mumbai Network</a>
                 <a class="btn btn-purchase" v-if="!account" style="float: left; margin-right: 20px; width: 300px" @click="requestAccount()">Connect Account {{account}}</a>
                 <a class="btn btn-purchase disabled" style="float: left; width: 300px;">Mint a free Access Card</a>
               </div>
