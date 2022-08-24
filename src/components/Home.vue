@@ -836,7 +836,7 @@ div::-webkit-scrollbar {
 
 .img-hld {
     background-color: green;
-      width: calc(50% - 45px)!important;
+    width: 39%;
     margin-left: 10%;
     background-size: cover!important;
     border-radius: 0px;
