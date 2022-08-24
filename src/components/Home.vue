@@ -35,7 +35,7 @@
 
             </div>
 
-          <div class="con col-md-6" v-if="playpassEnabled" id="con" style="height: 400px; width: 42%; overflow: scroll; scrollbar-width: none;  padding-bottom: 50px;">
+          <div class="con col-md-6" v-if="playpassEnabled" id="con" style="height: 400px; width: 42%; min-width: 38%!important; overflow: scroll; scrollbar-width: none;  padding-bottom: 50px;">
               <div v-for="item in previousCommands" :key="item" style="width: 700px; margin-left:5px;" id="conwrap" class="conwrap">
                 <p v-if="item.char === 'user'" style="text-transform:uppercase;">> {{item.message}}</p>
                 <p v-if="item.char === 'sug'" class="anim-typewriter" style="color: white; height: 20px!important;  overflow: hidden; text-transform:uppercase;">{{item.message}}</p>
@@ -45,7 +45,7 @@
                 <p v-if="item.char === 'death'" class="anim-typewriter" style="height: 20px!important;  overflow: hidden; color: red;font-weight: 800; opacity: 0; text-transform:uppercase;">{{item.message}}</p>
 
               </div>
-              <div class="clearfix" style="margin-top: 10px; width: 34%; padding: 5px; position: fixed; bottom: 200px;">
+              <div class="clearfix" style="margin-top: 10px; width: 34%; padding: 5px; position: fixed; top: 530px;">
               <p class="cursor">></p>
               <input autofocus type="text" v-model="inputString" class="inp-cursor"  refs="cursi">
               </div>
