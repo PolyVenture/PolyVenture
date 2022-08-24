@@ -35,7 +35,7 @@
 
             </div>
 
-          <div class="con col-md-6" v-if="playpassEnabled" id="con" style="height: 400px; overflow: scroll; scrollbar-width: none;  padding-bottom: 50px;">
+          <div class="con col-md-6" v-if="playpassEnabled" id="con" style="height: 400px; width: 42%; overflow: scroll; scrollbar-width: none;  padding-bottom: 50px;">
               <div v-for="item in previousCommands" :key="item" style="width: 700px; margin-left:5px;" id="conwrap" class="conwrap">
                 <p v-if="item.char === 'user'" style="text-transform:uppercase;">> {{item.message}}</p>
                 <p v-if="item.char === 'sug'" class="anim-typewriter" style="color: white; height: 20px!important;  overflow: hidden; text-transform:uppercase;">{{item.message}}</p>
@@ -836,12 +836,14 @@ div::-webkit-scrollbar {
 
 .img-hld {
     background-color: green;
-    width: 40%;
+      width: calc(50% - 45px)!important;
     margin-left: 10%;
+    background-size: cover!important;
     border-radius: 0px;
     margin-top: 0px;
     height: 290px;
     float: left;
+
     display: none;
     text-align: right;
     border: 4px solid #0f0e0e;
