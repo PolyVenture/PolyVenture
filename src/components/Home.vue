@@ -45,7 +45,7 @@
                 <p v-if="item.char === 'death'" class="anim-typewriter" style="height: 20px!important;  overflow: hidden; color: red;font-weight: 800; opacity: 0; text-transform:uppercase;">{{item.message}}</p>
 
               </div>
-              <div class="clearfix" style="margin-top: 10px; width: 34%; padding: 5px; position: fixed; top: 530px;">
+              <div class="clearfix" style="margin-top: 10px; width: 34%; max-width: 536px; padding: 5px; position: fixed; top: 590px;">
               <p class="cursor">></p>
               <input autofocus type="text" v-model="inputString" class="inp-cursor"  refs="cursi">
               </div>
